@@ -355,8 +355,23 @@
             '2026-03-19'
         ];
 
-        // 当前数据的最后更新时间（全局变量）
-        let currentDataLastUpdate = '';
+        // 系统最后更新时间（固定值）
+        let systemLastUpdate = '';
+
+        // 加载系统最后更新时间
+        async function loadSystemLastUpdate() {
+            try {
+                const response = await fetch('hot_data.json?t=' + Date.now());
+                if (response.ok) {
+                    const data = await response.json();
+                    systemLastUpdate = data.lastUpdate || new Date().toLocaleDateString();
+                    document.getElementById('lastUpdate').textContent = systemLastUpdate;
+                }
+            } catch (error) {
+                console.error('加载系统更新时间失败:', error);
+                document.getElementById('lastUpdate').textContent = '加载失败';
+            }
+        }
 
         // 初始化日期选择器
         function initDateSelector() {
@@ -430,11 +445,8 @@
                 }
                 const data = await response.json();
                 currentData = data;
-                // 保存当前数据的更新时间
-                currentDataLastUpdate = data.lastUpdate || date;
                 renderPage(data);
-                // 显示当前选择的日期，而不是数据更新时间
-                document.getElementById('lastUpdate').textContent = `${date} (${data.lastUpdate})`;
+                // 不再更新lastUpdate，保持系统固定的最后更新时间
             } catch (error) {
                 console.error('加载数据失败:', error);
                 // 如果历史数据不存在，显示提示，但不要自动跳转
@@ -453,10 +465,8 @@
                 }
                 const data = await response.json();
                 currentData = data;
-                // 保存当前数据的更新时间
-                currentDataLastUpdate = data.lastUpdate || new Date().toLocaleDateString();
                 renderPage(data);
-                document.getElementById('lastUpdate').textContent = data.lastUpdate || new Date().toLocaleDateString();
+                // 不再更新lastUpdate，保持系统固定的最后更新时间
             } catch (error) {
                 console.error('加载数据失败:', error);
                 document.querySelectorAll('.loading').forEach(el => {
@@ -649,6 +659,8 @@
         // 页面加载时初始化
         window.onload = function() {
             initDateSelector();
+            // 加载系统最后更新时间
+            loadSystemLastUpdate();
             // 初始加载最近可用的历史数据
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
