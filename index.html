@@ -369,7 +369,8 @@
         async function loadTodayData() {
             const today = formatDate(new Date());
             document.getElementById('dateSelect').value = today;
-            await loadDataForDate(today, false);
+            // 今天的数据从默认文件加载
+            await loadDefaultData();
         }
 
         // 根据日期加载数据
@@ -387,11 +388,10 @@
                 document.getElementById('lastUpdate').textContent = date;
             } catch (error) {
                 console.error('加载数据失败:', error);
-                // 如果历史数据不存在，显示提示
+                // 如果历史数据不存在，显示提示，但不要自动跳转
                 if (showAlert) {
-                    alert(`${date} 的数据不存在，将显示今天的数据`);
+                    alert(`${date} 的数据不存在`);
                 }
-                await loadTodayData();
             }
         }
 
@@ -556,16 +556,21 @@
         // 页面加载时初始化
         window.onload = function() {
             initDateSelector();
+            // 初始加载今天的默认数据
             loadDefaultData();
         };
 
         // 每5分钟自动刷新
         setInterval(() => {
             const selectedDate = document.getElementById('dateSelect').value;
-            if (selectedDate) {
-                loadDataForDate(selectedDate);
-            } else {
+            const today = formatDate(new Date());
+            
+            // 如果选择的是今天，或者没有选择日期，则刷新今天的默认数据
+            if (!selectedDate || selectedDate === today) {
                 loadDefaultData();
+            } else {
+                // 如果选择的是历史日期，只刷新该日期的数据
+                loadDataForDate(selectedDate, false);
             }
         }, 5 * 60 * 1000);
     </script>
