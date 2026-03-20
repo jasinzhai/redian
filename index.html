@@ -369,11 +369,11 @@
         async function loadTodayData() {
             const today = formatDate(new Date());
             document.getElementById('dateSelect').value = today;
-            await loadDataForDate(today);
+            await loadDataForDate(today, false);
         }
 
         // 根据日期加载数据
-        async function loadDataForDate(date) {
+        async function loadDataForDate(date, showAlert = true) {
             const dataFile = `hot_data_${date}.json`;
             
             try {
@@ -388,7 +388,9 @@
             } catch (error) {
                 console.error('加载数据失败:', error);
                 // 如果历史数据不存在，显示提示
-                alert(`${date} 的数据不存在，将显示今天的数据`);
+                if (showAlert) {
+                    alert(`${date} 的数据不存在，将显示今天的数据`);
+                }
                 await loadTodayData();
             }
         }
