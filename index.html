@@ -265,10 +265,11 @@
         <div class="header">
             <h1>🎮 妄想山海热点追踪</h1>
             <p class="update-time">最后更新: <span id="lastUpdate">加载中...</span></p>
-            
+
             <div class="date-selector">
                 <label for="dateSelect">选择日期:</label>
                 <input type="date" id="dateSelect">
+                <button onclick="loadSelectedDate()" style="background: #4ECDC4;">查看</button>
                 <button onclick="loadTodayData()" style="background: #667eea;">今天</button>
             </div>
         </div>
@@ -361,7 +362,6 @@
         function initDateSelector() {
             const today = new Date();
             const dateSelect = document.getElementById('dateSelect');
-            dateSelect.value = formatDate(today);
 
             // 设置最小日期为7天前
             const minDate = new Date();
@@ -373,18 +373,8 @@
             yesterday.setDate(yesterday.getDate() - 1);
             dateSelect.max = formatDate(yesterday);
 
-            // 监听日期选择变化
-            dateSelect.addEventListener('change', function() {
-                const selectedDate = this.value;
-                // 如果选择的日期没有数据，清空选择并提示
-                if (selectedDate && !availableDates.includes(selectedDate)) {
-                    alert(`${selectedDate} 暂无数据，请选择其他日期`);
-                    this.value = '';
-                } else if (selectedDate) {
-                    // 选择的日期有数据，直接加载
-                    loadDateData();
-                }
-            });
+            // 初始不设置值，避免加载不存在的日期
+            dateSelect.value = '';
         }
 
         // 格式化日期为YYYY-MM-DD
@@ -398,9 +388,35 @@
         // 加载今天的数据
         async function loadTodayData() {
             const today = formatDate(new Date());
-            document.getElementById('dateSelect').value = today;
-            // 今天的数据从默认文件加载
-            await loadDefaultData();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = formatDate(yesterday);
+
+            // 如果有昨天的数据，加载昨天的；否则加载默认数据
+            if (availableDates.includes(yesterdayStr)) {
+                document.getElementById('dateSelect').value = yesterdayStr;
+                await loadDataForDate(yesterdayStr);
+            } else {
+                document.getElementById('dateSelect').value = '';
+                await loadDefaultData();
+            }
+        }
+
+        // 加载选择的日期数据
+        async function loadSelectedDate() {
+            const selectedDate = document.getElementById('dateSelect').value;
+
+            if (!selectedDate) {
+                alert('请先选择一个日期');
+                return;
+            }
+
+            if (!availableDates.includes(selectedDate)) {
+                alert(`${selectedDate} 暂无数据，请选择其他日期`);
+                return;
+            }
+
+            await loadDataForDate(selectedDate);
         }
 
         // 根据日期加载数据
@@ -591,8 +607,18 @@
         // 页面加载时初始化
         window.onload = function() {
             initDateSelector();
-            // 初始加载今天的默认数据
-            loadDefaultData();
+            // 初始加载最近可用的历史数据
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = formatDate(yesterday);
+
+            if (availableDates.includes(yesterdayStr)) {
+                loadDataForDate(yesterdayStr);
+                document.getElementById('dateSelect').value = yesterdayStr;
+            } else {
+                // 如果昨天没有数据，加载默认数据
+                loadDefaultData();
+            }
         };
 
         // 每5分钟自动刷新
