@@ -269,7 +269,6 @@
             <div class="date-selector">
                 <label for="dateSelect">选择日期:</label>
                 <input type="date" id="dateSelect">
-                <button onclick="loadDateData()">查看</button>
                 <button onclick="loadTodayData()" style="background: #667eea;">今天</button>
             </div>
         </div>
@@ -355,6 +354,9 @@
             '2026-03-19'
         ];
 
+        // 当前数据的最后更新时间（全局变量）
+        let currentDataLastUpdate = '';
+
         // 初始化日期选择器
         function initDateSelector() {
             const today = new Date();
@@ -366,16 +368,21 @@
             minDate.setDate(minDate.getDate() - 7);
             dateSelect.min = formatDate(minDate);
 
-            // 设置最大日期为今天
-            dateSelect.max = formatDate(today);
+            // 设置最大日期为昨天（今天没有历史数据）
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateSelect.max = formatDate(yesterday);
 
             // 监听日期选择变化
-            dateSelect.addEventListener('input', function() {
+            dateSelect.addEventListener('change', function() {
                 const selectedDate = this.value;
-                // 如果选择的日期没有数据且不是今天，清空选择并提示
-                if (selectedDate && !availableDates.includes(selectedDate) && selectedDate !== formatDate(new Date())) {
+                // 如果选择的日期没有数据，清空选择并提示
+                if (selectedDate && !availableDates.includes(selectedDate)) {
                     alert(`${selectedDate} 暂无数据，请选择其他日期`);
-                    this.value = formatDate(new Date());
+                    this.value = '';
+                } else if (selectedDate) {
+                    // 选择的日期有数据，直接加载
+                    loadDateData();
                 }
             });
         }
@@ -386,19 +393,6 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
-        }
-
-        // 加载指定日期的数据
-        async function loadDateData() {
-            const dateSelect = document.getElementById('dateSelect');
-            const selectedDate = dateSelect.value;
-            
-            if (!selectedDate) {
-                alert('请选择日期');
-                return;
-            }
-            
-            await loadDataForDate(selectedDate);
         }
 
         // 加载今天的数据
@@ -412,7 +406,7 @@
         // 根据日期加载数据
         async function loadDataForDate(date, showAlert = true) {
             const dataFile = `hot_data_${date}.json`;
-            
+
             try {
                 const response = await fetch(dataFile + '?t=' + Date.now());
                 if (!response.ok) {
@@ -420,8 +414,11 @@
                 }
                 const data = await response.json();
                 currentData = data;
+                // 保存当前数据的更新时间
+                currentDataLastUpdate = data.lastUpdate || date;
                 renderPage(data);
-                document.getElementById('lastUpdate').textContent = date;
+                // 显示当前选择的日期，而不是数据更新时间
+                document.getElementById('lastUpdate').textContent = `${date} (${data.lastUpdate})`;
             } catch (error) {
                 console.error('加载数据失败:', error);
                 // 如果历史数据不存在，显示提示，但不要自动跳转
@@ -440,6 +437,8 @@
                 }
                 const data = await response.json();
                 currentData = data;
+                // 保存当前数据的更新时间
+                currentDataLastUpdate = data.lastUpdate || new Date().toLocaleDateString();
                 renderPage(data);
                 document.getElementById('lastUpdate').textContent = data.lastUpdate || new Date().toLocaleDateString();
             } catch (error) {
@@ -600,12 +599,12 @@
         setInterval(() => {
             const selectedDate = document.getElementById('dateSelect').value;
             const today = formatDate(new Date());
-            
-            // 如果选择的是今天，或者没有选择日期，则刷新今天的默认数据
-            if (!selectedDate || selectedDate === today) {
+
+            // 如果没有选择日期，则刷新今天的默认数据
+            if (!selectedDate) {
                 loadDefaultData();
             } else {
-                // 如果选择的是历史日期，只刷新该日期的数据
+                // 如果选择的是历史日期，只刷新该日期的数据，不显示提示
                 loadDataForDate(selectedDate, false);
             }
         }, 5 * 60 * 1000);
