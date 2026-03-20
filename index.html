@@ -68,6 +68,16 @@
             font-size: 1em;
             cursor: pointer;
             background: white;
+            min-width: 150px;
+        }
+
+        .date-selector input:focus {
+            outline: 2px solid #667eea;
+        }
+
+        .date-selector input::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(0.4);
         }
 
         .date-selector button {
@@ -251,7 +261,7 @@
             
             <div class="date-selector">
                 <label for="dateSelect">选择日期:</label>
-                <input type="date" id="dateSelect">
+                <input type="date" id="dateSelect" readonly onfocus="this.showPicker()">
                 <button onclick="loadDateData()">查看</button>
                 <button onclick="loadTodayData()" style="background: #667eea;">今天</button>
             </div>
@@ -329,19 +339,38 @@
         let chartInstance = null;
         let currentData = null;
 
+        // 可用的历史日期列表
+        const availableDates = [
+            '2026-03-15',
+            '2026-03-16',
+            '2026-03-17',
+            '2026-03-18',
+            '2026-03-19'
+        ];
+
         // 初始化日期选择器
         function initDateSelector() {
             const today = new Date();
             const dateSelect = document.getElementById('dateSelect');
             dateSelect.value = formatDate(today);
-            
+
             // 设置最小日期为7天前
             const minDate = new Date();
             minDate.setDate(minDate.getDate() - 7);
             dateSelect.min = formatDate(minDate);
-            
+
             // 设置最大日期为今天
             dateSelect.max = formatDate(today);
+
+            // 监听日期选择变化
+            dateSelect.addEventListener('input', function() {
+                const selectedDate = this.value;
+                // 如果选择的日期没有数据且不是今天，清空选择并提示
+                if (selectedDate && !availableDates.includes(selectedDate) && selectedDate !== formatDate(new Date())) {
+                    alert(`${selectedDate} 暂无数据，请选择其他日期`);
+                    this.value = formatDate(new Date());
+                }
+            });
         }
 
         // 格式化日期为YYYY-MM-DD
