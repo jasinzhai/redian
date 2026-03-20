@@ -290,7 +290,7 @@
         </div>
 
         <div class="chart-container">
-            <h2>📊 各平台热点分布</h2>
+            <h2>📊 热点关键词分布</h2>
             <div class="chart-wrapper">
                 <canvas id="platformChart"></canvas>
             </div>
@@ -545,30 +545,61 @@
         // 渲染图表（调整大小）
         function renderChart(data) {
             const ctx = document.getElementById('platformChart').getContext('2d');
-            
+
             // 销毁旧图表
             if (chartInstance) {
                 chartInstance.destroy();
             }
-            
-            const platformCounts = {
-                '抖音': data.douyin ? data.douyin.items.length : 0,
-                '快手': data.kuaishou ? data.kuaishou.items.length : 0,
-                'B站': data.bilibili ? data.bilibili.items.length : 0,
-                '贴吧': data.tieba ? data.tieba.items.length : 0
+
+            // 提取关键词
+            const keywords = {};
+
+            // 定义关键词映射
+            const keywordPatterns = {
+                '神躯外相': ['神躯外相', '风神因因乎', '因因乎'],
+                '驭兽争霸': ['驭兽争霸', 'S1赛季', '赛季', '斗兽'],
+                '宠物进化': ['进化', '龙子', '千年', '宠物', '豢龙'],
+                '回归活动': ['回归', '奖励', '领取'],
+                '版本更新': ['更新', '版本', '停服'],
+                '攻略教学': ['攻略', '教学', '连招', '搭配'],
+                '实战演示': ['实战', '演示', '秒杀', '伤害']
             };
+
+            // 从所有平台的热点标题中提取关键词
+            const platforms = ['douyin', 'kuaishou', 'bilibili', 'tieba'];
+            platforms.forEach(platform => {
+                if (data[platform] && data[platform].items) {
+                    data[platform].items.forEach(item => {
+                        const title = item.title + ' ' + item.description;
+                        for (const [keyword, patterns] of Object.entries(keywordPatterns)) {
+                            if (patterns.some(pattern => title.includes(pattern))) {
+                                keywords[keyword] = (keywords[keyword] || 0) + 1;
+                                break;
+                            }
+                        }
+                    });
+                }
+            });
+
+            // 如果没有匹配到关键词，使用默认数据
+            if (Object.keys(keywords).length === 0) {
+                keywords['其他'] = 1;
+            }
 
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(platformCounts),
+                    labels: Object.keys(keywords),
                     datasets: [{
-                        data: Object.values(platformCounts),
+                        data: Object.values(keywords),
                         backgroundColor: [
                             '#FF6B6B',
                             '#4ECDC4',
                             '#45B7D1',
-                            '#FFA07A'
+                            '#FFA07A',
+                            '#98D8C8',
+                            '#F7DC6F',
+                            '#BB8FCE'
                         ],
                         borderWidth: 2,
                         borderColor: '#fff'
@@ -579,10 +610,21 @@
                     maintainAspectRatio: true,
                     plugins: {
                         legend: {
-                            position: 'bottom',
+                            position: 'right',
                             labels: {
                                 font: {
                                     size: 12
+                                },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.raw / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.raw} (${percentage}%)`;
                                 }
                             }
                         }
