@@ -75,26 +75,12 @@
             outline: 2px solid #667eea;
         }
 
-        /* 隐藏输入框中的数字，只显示日期选择器图标 */
-        .date-selector input::-webkit-datetime-edit,
-        .date-selector input::-webkit-datetime-edit-fields-wrapper,
-        .date-selector input::-webkit-datetime-edit-text,
-        .date-selector input::-webkit-datetime-edit-month-field,
-        .date-selector input::-webkit-datetime-edit-day-field,
-        .date-selector input::-webkit-datetime-edit-year-field {
-            color: transparent;
-        }
-
+        /* 设置日期选择器图标的样式 */
         .date-selector input::-webkit-calendar-picker-indicator {
             cursor: pointer;
             filter: invert(0.4);
-            margin-right: 0;
+            margin-left: 5px;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            left: 0;
-            top: 0;
         }
 
         .date-selector input {
