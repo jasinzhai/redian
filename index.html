@@ -44,6 +44,47 @@
         .header .update-time {
             font-size: 1.2em;
             opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .date-selector {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .date-selector label {
+            color: white;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+
+        .date-selector input {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            background: white;
+        }
+
+        .date-selector button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            background: #4ECDC4;
+            color: white;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .date-selector button:hover {
+            background: #45B7D1;
         }
 
         .grid {
@@ -71,14 +112,6 @@
             font-size: 1.5em;
             border-bottom: 3px solid #667eea;
             padding-bottom: 10px;
-        }
-
-        .platform-icon {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            margin-right: 10px;
-            vertical-align: middle;
         }
 
         .hot-item {
@@ -174,6 +207,13 @@
             font-size: 1.5em;
         }
 
+        .chart-wrapper {
+            position: relative;
+            width: 60%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -197,6 +237,9 @@
             .grid {
                 grid-template-columns: 1fr;
             }
+            .chart-wrapper {
+                width: 90%;
+            }
         }
     </style>
 </head>
@@ -205,6 +248,13 @@
         <div class="header">
             <h1>🎮 妄想山海热点追踪</h1>
             <p class="update-time">最后更新: <span id="lastUpdate">加载中...</span></p>
+            
+            <div class="date-selector">
+                <label for="dateSelect">选择日期:</label>
+                <input type="date" id="dateSelect">
+                <button onclick="loadDateData()">查看</button>
+                <button onclick="loadTodayData()" style="background: #667eea;">今天</button>
+            </div>
         </div>
 
         <div class="stats">
@@ -218,18 +268,20 @@
             </div>
             <div class="stat-card">
                 <div class="number" id="updateCount">0</div>
-                <div class="label">今日更新</div>
+                <div class="label">当日更新</div>
             </div>
         </div>
 
         <div class="chart-container">
             <h2>📊 各平台热点分布</h2>
-            <canvas id="platformChart"></canvas>
+            <div class="chart-wrapper">
+                <canvas id="platformChart"></canvas>
+            </div>
         </div>
 
         <div class="grid">
             <div class="card version-update">
-                <h2>🔥 最新版本更新</h2>
+                <h2>🔥 版本更新</h2>
                 <div id="versionContent">
                     <div class="loading">加载中...</div>
                 </div>
@@ -273,43 +325,98 @@
     </div>
 
     <script>
-        // 数据存储路径
-        const DATA_FILE = 'hot_data.json';
+        // 全局变量
+        let chartInstance = null;
+        let currentData = null;
 
-        // 加载数据
-        async function loadHotData() {
+        // 初始化日期选择器
+        function initDateSelector() {
+            const today = new Date();
+            const dateSelect = document.getElementById('dateSelect');
+            dateSelect.value = formatDate(today);
+            
+            // 设置最小日期为7天前
+            const minDate = new Date();
+            minDate.setDate(minDate.getDate() - 7);
+            dateSelect.min = formatDate(minDate);
+            
+            // 设置最大日期为今天
+            dateSelect.max = formatDate(today);
+        }
+
+        // 格式化日期为YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // 加载指定日期的数据
+        async function loadDateData() {
+            const dateSelect = document.getElementById('dateSelect');
+            const selectedDate = dateSelect.value;
+            
+            if (!selectedDate) {
+                alert('请选择日期');
+                return;
+            }
+            
+            await loadDataForDate(selectedDate);
+        }
+
+        // 加载今天的数据
+        async function loadTodayData() {
+            const today = formatDate(new Date());
+            document.getElementById('dateSelect').value = today;
+            await loadDataForDate(today);
+        }
+
+        // 根据日期加载数据
+        async function loadDataForDate(date) {
+            const dataFile = `hot_data_${date}.json`;
+            
             try {
-                const response = await fetch(DATA_FILE + '?t=' + Date.now());
+                const response = await fetch(dataFile + '?t=' + Date.now());
+                if (!response.ok) {
+                    throw new Error('数据不存在');
+                }
+                const data = await response.json();
+                currentData = data;
+                renderPage(data);
+                document.getElementById('lastUpdate').textContent = date;
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                // 如果历史数据不存在，显示提示
+                alert(`${date} 的数据不存在，将显示今天的数据`);
+                await loadTodayData();
+            }
+        }
+
+        // 加载今天的默认数据
+        async function loadDefaultData() {
+            try {
+                const response = await fetch('hot_data.json?t=' + Date.now());
                 if (!response.ok) {
                     throw new Error('无法加载数据');
                 }
                 const data = await response.json();
-                return data;
+                currentData = data;
+                renderPage(data);
+                document.getElementById('lastUpdate').textContent = data.lastUpdate || new Date().toLocaleDateString();
             } catch (error) {
                 console.error('加载数据失败:', error);
-                return null;
+                document.querySelectorAll('.loading').forEach(el => {
+                    el.textContent = '暂无数据，请等待数据更新';
+                });
             }
-        }
-
-        // 更新最后更新时间
-        function updateLastUpdate() {
-            const now = new Date();
-            const timeStr = now.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('lastUpdate').textContent = timeStr;
         }
 
         // 渲染版本更新
         function renderVersionUpdate(data) {
             const container = document.getElementById('versionContent');
             if (!data || !data.versionUpdate) {
-                container.innerHTML = '<div class="error">暂无版本更新数据</div>';
+                container.innerHTML = '<div class="error">该日期暂无版本更新数据</div>';
                 return;
             }
 
@@ -332,7 +439,7 @@
         function renderPlatformHot(containerId, platformData) {
             const container = document.getElementById(containerId);
             if (!platformData || platformData.items.length === 0) {
-                container.innerHTML = '<div class="error">暂无热点数据</div>';
+                container.innerHTML = '<div class="error">该日期暂无热点数据</div>';
                 return;
             }
 
@@ -353,7 +460,7 @@
         function renderTrendAnalysis(data) {
             const container = document.getElementById('trendContent');
             if (!data || !data.trendAnalysis) {
-                container.innerHTML = '<div class="error">暂无趋势分析数据</div>';
+                container.innerHTML = '<div class="error">该日期暂无趋势分析数据</div>';
                 return;
             }
 
@@ -382,9 +489,14 @@
             document.getElementById('updateCount').textContent = data.todayUpdates || 0;
         }
 
-        // 渲染图表
+        // 渲染图表（调整大小）
         function renderChart(data) {
             const ctx = document.getElementById('platformChart').getContext('2d');
+            
+            // 销毁旧图表
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
             
             const platformCounts = {
                 '抖音': data.douyin ? data.douyin.items.length : 0,
@@ -393,7 +505,7 @@
                 '贴吧': data.tieba ? data.tieba.items.length : 0
             };
 
-            new Chart(ctx, {
+            chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(platformCounts),
@@ -411,9 +523,15 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
                         }
                     }
                 }
@@ -421,23 +539,7 @@
         }
 
         // 主渲染函数
-        async function renderPage() {
-            const data = await loadHotData();
-            
-            if (!data) {
-                document.querySelectorAll('.loading').forEach(el => {
-                    el.textContent = '暂无数据，请等待数据更新';
-                });
-                return;
-            }
-
-            // 更新时间
-            if (data.lastUpdate) {
-                document.getElementById('lastUpdate').textContent = data.lastUpdate;
-            } else {
-                updateLastUpdate();
-            }
-
+        function renderPage(data) {
             // 渲染各部分
             renderVersionUpdate(data);
             renderPlatformHot('douyinContent', data.douyin);
@@ -449,11 +551,21 @@
             renderChart(data);
         }
 
-        // 页面加载时渲染
-        renderPage();
+        // 页面加载时初始化
+        window.onload = function() {
+            initDateSelector();
+            loadDefaultData();
+        };
 
         // 每5分钟自动刷新
-        setInterval(renderPage, 5 * 60 * 1000);
+        setInterval(() => {
+            const selectedDate = document.getElementById('dateSelect').value;
+            if (selectedDate) {
+                loadDataForDate(selectedDate);
+            } else {
+                loadDefaultData();
+            }
+        }, 5 * 60 * 1000);
     </script>
 </body>
 </html>
