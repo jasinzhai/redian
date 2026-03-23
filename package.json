@@ -1,0 +1,18 @@
+{
+  "name": "wangxiang-shanhai-hot-data-collector",
+  "version": "1.0.0",
+  "description": "妄想山海热点数据自动收集脚本",
+  "main": "collect_hot_data.js",
+  "scripts": {
+    "collect": "node collect_hot_data.js",
+    "start": "node collect_hot_data.js"
+  },
+  "keywords": [
+    "wangxiang-shanhai",
+    "hot-data",
+    "collector",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT"
+}

@@ -353,7 +353,8 @@
             '2026-03-17',
             '2026-03-18',
             '2026-03-19',
-            '2026-03-20'
+            '2026-03-20',
+            '2026-03-23'
         ];
 
         // 系统最后更新时间（固定值）
@@ -384,13 +385,14 @@
             minDate.setDate(minDate.getDate() - 7);
             dateSelect.min = formatDate(minDate);
 
-            // 设置最大日期为昨天（今天没有历史数据）
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            dateSelect.max = formatDate(yesterday);
+            // 设置最大日期为今天（因为有最新的数据）
+            const today = new Date();
+            dateSelect.max = formatDate(today);
 
-            // 初始不设置值，避免加载不存在的日期
-            dateSelect.value = '';
+            // 设置默认值为最新的可用日期
+            if (availableDates.length > 0) {
+                dateSelect.value = availableDates[availableDates.length - 1];
+            }
         }
 
         // 格式化日期为YYYY-MM-DD
@@ -662,16 +664,13 @@
             initDateSelector();
             // 加载系统最后更新时间
             loadSystemLastUpdate();
-            // 初始加载最近可用的历史数据
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = formatDate(yesterday);
-
-            if (availableDates.includes(yesterdayStr)) {
-                loadDataForDate(yesterdayStr);
-                document.getElementById('dateSelect').value = yesterdayStr;
+            // 初始加载最新的可用数据
+            const latestDate = availableDates[availableDates.length - 1];
+            if (latestDate) {
+                loadDataForDate(latestDate);
+                document.getElementById('dateSelect').value = latestDate;
             } else {
-                // 如果昨天没有数据，加载默认数据
+                // 如果没有可用日期，加载默认数据
                 loadDefaultData();
             }
         };
