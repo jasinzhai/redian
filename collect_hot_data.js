@@ -243,13 +243,13 @@ function writeJSONFile(filePath, data) {
 /**
  * 主函数
  */
-function main() {
+function main(targetDate = null) {
     console.log('开始收集妄想山海热点数据...');
     console.log(`时间: ${new Date().toLocaleString('zh-CN')}\n`);
 
-    // 生成今天的数据
-    const today = new Date();
-    const data = generateHotData(today);
+    // 生成指定日期或今天的数据
+    const date = targetDate ? new Date(targetDate) : new Date();
+    const data = generateHotData(date);
 
     // 文件名：hot_data_YYYY-MM-DD.json
     const fileName = `hot_data_${data.date}.json`;
@@ -258,9 +258,11 @@ function main() {
     // 写入文件
     writeJSONFile(filePath, data);
 
-    // 同时更新 hot_data.json 作为默认数据
-    const defaultFilePath = path.join(OUTPUT_DIR, 'hot_data.json');
-    writeJSONFile(defaultFilePath, data);
+    // 同时更新 hot_data.json 作为默认数据（仅当没有指定日期或指定日期是今天时）
+    if (!targetDate || data.date === formatDate(new Date())) {
+        const defaultFilePath = path.join(OUTPUT_DIR, 'hot_data.json');
+        writeJSONFile(defaultFilePath, data);
+    }
 
     console.log(`\n✓ 数据收集完成！`);
     console.log(`✓ 总计: 100条热点内容（各平台25条）`);
@@ -268,5 +270,16 @@ function main() {
     console.log(`✓ 更新时间: ${data.lastUpdate}`);
 }
 
-// 执行主函数
-main();
+/**
+ * 格式化日期
+ */
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// 执行主函数（支持命令行参数）
+const targetDate = process.argv[2];
+main(targetDate);
