@@ -17,6 +17,12 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
+            transition: background 0.5s;
+        }
+
+        /* FC足球世界主题 */
+        body.theme-fc {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
 
         .container {
@@ -35,10 +41,44 @@
             backdrop-filter: blur(10px);
         }
 
+        .game-selector {
+            margin-bottom: 20px;
+        }
+
         .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
+            font-size: 2.5em;
+            margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .game-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .game-tab {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .game-tab:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .game-tab.active {
+            background: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .header .update-time {
@@ -263,7 +303,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎮 妄想山海热点追踪</h1>
+            <div class="game-selector">
+                <h1 id="gameTitle">🎮 妄想山海热点追踪</h1>
+                <div class="game-tabs">
+                    <button class="game-tab active" onclick="switchGame('wangxiang')" data-game="wangxiang">妄想山海</button>
+                    <button class="game-tab" onclick="switchGame('fc')" data-game="fc">FC足球世界</button>
+                </div>
+            </div>
             <p class="update-time">最后更新: <span id="lastUpdate">加载中...</span></p>
 
             <div class="date-selector">
@@ -345,31 +391,76 @@
         // 全局变量
         let chartInstance = null;
         let currentData = null;
+        let currentGame = 'wangxiang'; // 当前游戏: 'wangxiang' 或 'fc'
 
-        // 可用的历史日期列表
-        const availableDates = [
-            '2026-03-15',
-            '2026-03-16',
-            '2026-03-17',
-            '2026-03-18',
-            '2026-03-19',
-            '2026-03-20',
-            '2026-03-21',
-            '2026-03-22',
-            '2026-03-23',
-            '2026-03-24',
-            '2026-03-25',
-            '2026-03-26',
-            '2026-03-27'
-        ];
+        // 游戏配置
+        const gameConfig = {
+            wangxiang: {
+                name: '妄想山海',
+                title: '🎮 妄想山海热点追踪',
+                dataPrefix: 'hot_data',
+                themeClass: '',
+                dates: [
+                    '2026-03-15', '2026-03-16', '2026-03-17', '2026-03-18',
+                    '2026-03-19', '2026-03-20', '2026-03-21', '2026-03-22',
+                    '2026-03-23', '2026-03-24', '2026-03-25', '2026-03-26', '2026-03-27'
+                ]
+            },
+            fc: {
+                name: 'FC足球世界',
+                title: '⚽ FC足球世界热点追踪',
+                dataPrefix: 'fc_hot_data',
+                themeClass: 'theme-fc',
+                dates: [
+                    '2026-03-15', '2026-03-16', '2026-03-17', '2026-03-18',
+                    '2026-03-19', '2026-03-20', '2026-03-21', '2026-03-22',
+                    '2026-03-23', '2026-03-24', '2026-03-25', '2026-03-26', '2026-03-27'
+                ]
+            }
+        };
 
         // 系统最后更新时间（固定值）
         let systemLastUpdate = '';
 
+        // 切换游戏
+        function switchGame(game) {
+            currentGame = game;
+            const config = gameConfig[game];
+
+            // 更新标题
+            document.getElementById('gameTitle').textContent = config.title;
+
+            // 更新主题
+            document.body.className = config.themeClass;
+
+            // 更新日期列表
+            availableDates = config.dates;
+
+            // 重新初始化日期选择器
+            initDateSelector();
+
+            // 更新游戏标签样式
+            document.querySelectorAll('.game-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.game === game) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // 加载最新数据
+            loadSystemLastUpdate();
+            const latestDate = availableDates[availableDates.length - 1];
+            if (latestDate) {
+                loadDataForDate(latestDate);
+                document.getElementById('dateSelect').value = latestDate;
+            }
+        }
+
         // 加载系统最后更新时间
         async function loadSystemLastUpdate() {
             try {
-                const response = await fetch('hot_data.json?t=' + Date.now());
+                const config = gameConfig[currentGame];
+                const response = await fetch(config.dataPrefix + '.json?t=' + Date.now());
                 if (response.ok) {
                     const data = await response.json();
                     systemLastUpdate = data.lastUpdate || new Date().toLocaleDateString();
@@ -444,7 +535,8 @@
 
         // 根据日期加载数据
         async function loadDataForDate(date, showAlert = true) {
-            const dataFile = `hot_data_${date}.json`;
+            const config = gameConfig[currentGame];
+            const dataFile = `${config.dataPrefix}_${date}.json`;
 
             try {
                 const response = await fetch(dataFile + '?t=' + Date.now());
@@ -467,7 +559,8 @@
         // 加载今天的默认数据
         async function loadDefaultData() {
             try {
-                const response = await fetch('hot_data.json?t=' + Date.now());
+                const config = gameConfig[currentGame];
+                const response = await fetch(config.dataPrefix + '.json?t=' + Date.now());
                 if (!response.ok) {
                     throw new Error('无法加载数据');
                 }
