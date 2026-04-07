@@ -123,7 +123,7 @@ async function loadTodayData() {
 ✅ GitHub Pages 将在 1-2 分钟内自动部署
 
 ## 验证方法
-1. 访问网站：https://jasinzhai.github.io/wangxiangshanhai-hot-tracker
+1. 访问网站：https://jasinzhai.github.io/redian
 2. 选择一个存在的历史日期（如：2026-03-17）
 3. 点击"查看"按钮
 4. 应该正常显示3月17日的数据，不会自动跳到今天

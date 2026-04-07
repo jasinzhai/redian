@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# 妄想山海热点追踪 - 推送到GitHub
+# 游戏热点追踪 - 推送到GitHub
 
 echo "=========================================="
-echo "  妄想山海热点追踪 - GitHub部署脚本"
+echo "  游戏热点追踪 - GitHub部署脚本"
 echo "=========================================="
 echo ""
 
@@ -27,7 +27,7 @@ echo ""
 # 4. 添加远程仓库（如果还没有添加）
 if ! git remote get-url origin > /dev/null 2>&1; then
     echo "请输入你的GitHub仓库地址："
-    echo "格式: https://github.com/你的用户名/wangxiangshanhai-hot-tracker.git"
+    echo "格式: https://github.com/你的用户名/redian.git"
     read -p "> " REPO_URL
     git remote add origin "$REPO_URL"
     echo "✓ 远程仓库已添加"

@@ -34,7 +34,7 @@ git add .
 git commit -m "Initial commit"
 
 # 创建GitHub仓库后，推送代码
-git remote add origin https://github.com/你的用户名/wangxiangshanhai-hot-tracker.git
+git remote add origin https://github.com/你的用户名/redian.git
 git push -u origin main
 ```
 
@@ -45,7 +45,7 @@ git push -u origin main
 3. 选择你刚创建的GitHub仓库
 4. 点击 "Deploy"
 5. 等待部署完成（通常1-2分钟）
-6. Vercel会给你一个域名，如 `https://wangxiangshanhai-hot-tracker.vercel.app`
+6. Vercel会给你一个域名，如 `https://redian.vercel.app`
 
 **优点**:
 - ✅ 完全免费
@@ -68,7 +68,7 @@ git init
 git add .
 git commit -m "Initial commit"
 git branch -M main
-git remote add origin https://github.com/你的用户名/wangxiangshanhai-hot-tracker.git
+git remote add origin https://github.com/你的用户名/redian.git
 git push -u origin main
 ```
 
@@ -80,7 +80,7 @@ git push -u origin main
 4. "Branch" 选择 "main"，文件夹选择 "/ (root)"
 5. 点击 "Save"
 6. 等待1-2分钟，页面会显示你的网站地址
-   - 格式：`https://你的用户名.github.io/wangxiangshanhai-hot-tracker`
+   - 格式：`https://你的用户名.github.io/redian`
 
 **优点**:
 - ✅ 完全免费
@@ -145,8 +145,8 @@ git push -u origin main
 scp -r index.html hot_data.json 用户名@服务器IP:/var/www/wangxiangshanhai/
 
 # 或者使用Git
-git clone https://github.com/你的用户名/wangxiangshanhai-hot-tracker.git
-cd wangxiangshanhai-hot-tracker
+git clone https://github.com/你的用户名/redian.git
+cd redian
 ```
 
 **步骤2**: 配置Nginx
@@ -264,7 +264,7 @@ git push
 ## 📁 项目文件说明
 
 ```
-wangxiangshanhai-hot-tracker/
+redian/
 ├── index.html                      # 主网页文件
 ├── hot_data.json                   # 热点数据文件（JSON格式）
 ├── 妄想山海2026年最新热点汇总报告.md   # 详细报告

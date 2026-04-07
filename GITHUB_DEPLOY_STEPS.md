@@ -14,8 +14,8 @@
    - 打开浏览器，访问：https://github.com/new
 
 2. **创建新仓库**
-   - Repository name（仓库名）: 输入 `wangxiangshanhai-hot-tracker`
-   - Description（描述）: 妄想山海热点追踪网页
+   - Repository name（仓库名）: 输入 `redian`
+   - Description（描述）: 游戏热点追踪网页
    - 设置仓库为 **Public**（公开）- *注意：只有公开仓库才能使用GitHub Pages免费服务*
    - **不要**勾选 "Add a README file"（我们已经有了）
    - **不要**勾选其他选项
@@ -23,7 +23,7 @@
 
 3. **获取仓库地址**
    - 创建完成后，GitHub会显示你的仓库地址
-   - 地址格式：`https://github.com/你的用户名/wangxiangshanhai-hot-tracker.git`
+   - 地址格式：`https://github.com/你的用户名/redian.git`
 
 ### 第二步：推送代码到GitHub
 
@@ -31,7 +31,7 @@
 
 ```bash
 # 添加远程仓库地址（替换下面的用户名）
-git remote add origin https://github.com/jasinzhai/wangxiangshanhai-hot-tracker.git
+git remote add origin https://github.com/jasinzhai/redian.git
 
 # 推送代码到GitHub
 git push -u origin main
@@ -53,7 +53,7 @@ git push -u origin main
 
 3. **等待部署完成**
    - 等待1-2分钟
-   - 页面会显示 "Your site is live at: https://jasinzhai.github.io/wangxiangshanhai-hot-tracker"
+   - 页面会显示 "Your site is live at: https://jasinzhai.github.io/redian"
    - 这就是你的网站地址！
 
 4. **访问你的网站**
@@ -78,7 +78,7 @@ Support for password authentication was removed on August 13, 2021.
 6. 复制生成的token（注意：token只显示一次）
 7. 使用以下命令推送：
 ```bash
-git remote set-url origin https://你的用户名:你的token@github.com/你的用户名/wangxiangshanhai-hot-tracker.git
+git remote set-url origin https://你的用户名:你的token@github.com/你的用户名/redian.git
 git push -u origin main
 ```
 
@@ -157,9 +157,9 @@ jobs:
 
 ## 🎉 部署成功后
 
-恭喜！你的妄想山海热点追踪网页已经成功部署到GitHub Pages了！
+恭喜！你的游戏热点追踪网页已经成功部署到GitHub Pages了！
 
-**你的网站地址**：`https://jasinzhai.github.io/wangxiangshanhai-hot-tracker`
+**你的网站地址**：`https://jasinzhai.github.io/redian`
 
 **接下来可以做的事**：
 1. 分享你的网站地址给朋友
